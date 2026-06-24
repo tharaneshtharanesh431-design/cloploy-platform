@@ -1,0 +1,11 @@
+{
+  "title": "Cloploy Runtime Overview",
+  "panels": [
+    { "title": "CPU Usage", "type": "timeseries" },
+    { "title": "Memory Usage", "type": "timeseries" },
+    { "title": "Network Traffic", "type": "timeseries" },
+    { "title": "Pod Health", "type": "stat" }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

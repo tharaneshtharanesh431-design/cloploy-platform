@@ -1,0 +1,15 @@
+node_modules
+.env
+coverage
+dist
+build
+uploads
+.tmp
+.DS_Store
+*.log
+apps/api/uploads
+apps/web/.vite
+terraform.tfstate
+terraform.tfstate.backup
+.terraform
+mongo_db_data

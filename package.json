@@ -1,0 +1,14 @@
+{
+  "name": "cloploy",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix apps/api\" \"npm run dev --prefix apps/web\"",
+    "build": "npm run build --prefix apps/api && npm run build --prefix apps/web",
+    "lint": "npm run lint --prefix apps/api && npm run lint --prefix apps/web",
+    "start": "npm run start --prefix apps/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

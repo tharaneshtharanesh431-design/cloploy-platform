@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloploy-web
+  namespace: cloploy
+spec:
+  selector:
+    app: cloploy-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  type: ClusterIP

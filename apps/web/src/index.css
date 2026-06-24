@@ -1,0 +1,305 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════════════
+   CLOPLOY DESIGN SYSTEM — Premium Dark Theme
+   Colors: #A855F7 purple · #22D3EE cyan · #F59E0B gold
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Base Resets ─────────────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(168, 85, 247, 0.35) transparent;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #06080F;
+    color: rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Smooth transitions on all interactive elements */
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    transition: all 0.2s ease;
+  }
+}
+
+/* ── Custom Scrollbar (Webkit) ───────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.55);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ── Glassmorphism ───────────────────────────────────── */
+@layer components {
+
+  /* Standard glass — semi-transparent surface */
+  .glass {
+    background: rgba(13, 17, 23, 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1rem;
+  }
+
+  /* Card glass — slightly more opaque for content cards */
+  .glass-card {
+    background: rgba(22, 27, 34, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Dark glass — deepest layer */
+  .glass-dark {
+    background: rgba(6, 8, 15, 0.85);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 1rem;
+  }
+
+  /* ── Gradient Text ───────────────────────────────────── */
+
+  /* Purple → Cyan gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #A855F7 0%, #22D3EE 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Gold gradient text */
+  .gradient-text-gold {
+    background: linear-gradient(135deg, #F59E0B 0%, #FCD34D 50%, #D97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Purple → Cyan → Purple (full spectrum) */
+  .gradient-text-full {
+    background: linear-gradient(135deg, #A855F7 0%, #22D3EE 50%, #A855F7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Neon Buttons ────────────────────────────────────── */
+
+  /* Purple neon button */
+  .btn-neon-purple {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    font-weight: 600;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.875rem;
+    color: #fff;
+    background: linear-gradient(135deg, #A855F7 0%, #7C3AED 100%);
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    box-shadow:
+      0 0 20px rgba(168, 85, 247, 0.3),
+      0 0 40px rgba(168, 85, 247, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .btn-neon-purple:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 30px rgba(168, 85, 247, 0.45),
+      0 0 60px rgba(168, 85, 247, 0.2);
+  }
+
+  .btn-neon-purple:active {
+    transform: translateY(0);
+  }
+
+  /* Cyan neon button */
+  .btn-neon-cyan {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    font-weight: 600;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 0.875rem;
+    color: #06080F;
+    background: linear-gradient(135deg, #22D3EE 0%, #06B6D4 100%);
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    box-shadow:
+      0 0 20px rgba(34, 211, 238, 0.3),
+      0 0 40px rgba(34, 211, 238, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .btn-neon-cyan:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 30px rgba(34, 211, 238, 0.45),
+      0 0 60px rgba(34, 211, 238, 0.2);
+  }
+
+  .btn-neon-cyan:active {
+    transform: translateY(0);
+  }
+
+  /* ── Animated Grid Background ────────────────────────── */
+  .grid-bg {
+    position: relative;
+  }
+
+  .grid-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(168, 85, 247, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(168, 85, 247, 0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: grid-scroll 30s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+  }
+
+  /* ── Floating Blobs ──────────────────────────────────── */
+  .floating-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.12;
+    pointer-events: none;
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .floating-blob-delayed {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    opacity: 0.08;
+    pointer-events: none;
+    animation: float-delayed 12s ease-in-out infinite;
+  }
+
+  /* ── Shimmer Effect ──────────────────────────────────── */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(168, 85, 247, 0.06) 40%,
+      rgba(34, 211, 238, 0.06) 60%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+    pointer-events: none;
+  }
+}
+
+/* ── Keyframes ────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-20px) scale(1.05);
+  }
+}
+
+@keyframes float-delayed {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(3deg);
+  }
+}
+
+@keyframes grid-scroll {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 60px 60px;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ── Selection Highlight ──────────────────────────────── */
+::selection {
+  background: rgba(168, 85, 247, 0.3);
+  color: #fff;
+}
+
+::-moz-selection {
+  background: rgba(168, 85, 247, 0.3);
+  color: #fff;
+}
+
+/* ── Focus Styles ─────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid rgba(168, 85, 247, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

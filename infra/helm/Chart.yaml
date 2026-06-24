@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cloploy-app
+description: A production-grade Helm chart for deploying tenant applications on Cloploy EKS cluster.
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

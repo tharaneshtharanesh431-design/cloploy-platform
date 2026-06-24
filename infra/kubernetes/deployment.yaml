@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloploy-web
+  namespace: cloploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloploy-web
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: cloploy-web
+    spec:
+      containers:
+        - name: cloploy-web
+          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/cloploy:latest
+          ports:
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: cloploy-config
+            - secretRef:
+                name: cloploy-secrets
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30

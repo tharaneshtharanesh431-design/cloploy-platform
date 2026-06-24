@@ -1,0 +1,110 @@
+openapi: 3.0.3
+info:
+  title: Cloploy API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3232/api
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /auth/register:
+    post:
+      summary: Register a user
+      requestBody:
+        required: true
+      responses:
+        '201':
+          description: User created
+  /auth/login:
+    post:
+      summary: Login a user
+      responses:
+        '200':
+          description: JWT tokens returned
+  /auth/me:
+    get:
+      security:
+        - bearerAuth: []
+      summary: Current user profile
+      responses:
+        '200':
+          description: Authenticated user
+  /projects:
+    get:
+      security:
+        - bearerAuth: []
+      summary: List projects
+      responses:
+        '200':
+          description: Project list
+    post:
+      security:
+        - bearerAuth: []
+      summary: Create project
+      responses:
+        '201':
+          description: Project created
+  /projects/import/upload:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Upload and analyze a project
+      responses:
+        '201':
+          description: Project imported
+  /projects/import/github:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Import project from GitHub metadata
+      responses:
+        '201':
+          description: GitHub project imported
+  /deployments:
+    get:
+      security:
+        - bearerAuth: []
+      summary: List deployments
+      responses:
+        '200':
+          description: Deployment list
+  /deployments/{projectId}/run:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Trigger one-click deploy
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Deployment queued
+  /deployments/{deploymentId}/rollback:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Roll back a deployment
+      parameters:
+        - name: deploymentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rollback accepted
+  /ai/assistant:
+    post:
+      security:
+        - bearerAuth: []
+      summary: Ask Cloploy AI Copilot
+      responses:
+        '200':
+          description: AI response

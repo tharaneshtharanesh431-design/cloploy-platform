@@ -1,0 +1,7 @@
+filebeat.inputs:
+  - type: filestream
+    id: cloploy-api
+    paths:
+      - /var/log/cloploy/*.log
+output.logstash:
+  hosts: ["logstash:5044"]

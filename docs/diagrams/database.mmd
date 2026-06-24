@@ -1,0 +1,29 @@
+erDiagram
+  USER ||--o{ PROJECT : owns
+  USER ||--o{ DEPLOYMENT : initiates
+  ORGANIZATION ||--o{ USER : contains
+  ORGANIZATION ||--o{ PROJECT : groups
+  PROJECT ||--o{ DEPLOYMENT : generates
+  USER {
+    string name
+    string email
+    string role
+    string githubUsername
+  }
+  ORGANIZATION {
+    string name
+    string slug
+    string billingPlan
+  }
+  PROJECT {
+    string name
+    string slug
+    string framework
+    string sourceType
+    string status
+  }
+  DEPLOYMENT {
+    string version
+    string status
+    string ingressHost
+  }
