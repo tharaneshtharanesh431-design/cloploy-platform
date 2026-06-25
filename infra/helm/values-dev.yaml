@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  repository: 344626518012.dkr.ecr.ap-southeast-2.amazonaws.com/cloploy-web
+  tag: "dev"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "alb"
+  hosts:
+    - host: dev.cloploy.app
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+autoscaling:
+  enabled: false

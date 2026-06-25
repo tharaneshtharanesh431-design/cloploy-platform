@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloploy-api
+  namespace: cloploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cloploy-api
+  template:
+    metadata:
+      labels:
+        app: cloploy-api
+    spec:
+      containers:
+        - name: cloploy-api
+          image: 344626518012.dkr.ecr.ap-southeast-2.amazonaws.com/cloploy-api:latest
+          ports:
+            - containerPort: 3121
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PORT
+              value: "3121"
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: cloploy-secrets
+                  key: MONGODB_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: cloploy-secrets
+                  key: JWT_SECRET
+            - name: REDIS_URL
+              value: "redis://cloploy-redis:6379"
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3121
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3121
+            initialDelaySeconds: 30
+            periodSeconds: 20

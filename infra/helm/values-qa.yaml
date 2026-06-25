@@ -1,0 +1,32 @@
+replicaCount: 2
+
+image:
+  repository: 344626518012.dkr.ecr.ap-southeast-2.amazonaws.com/cloploy-web
+  tag: "qa"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "alb"
+  hosts:
+    - host: qa.cloploy.app
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 384Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80

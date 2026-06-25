@@ -1,7 +1,7 @@
 variable "aws_region" {
   type        = string
   description = "AWS Region"
-  default     = "us-east-1"
+  default     = "ap-southeast-2"
 }
 
 variable "project_slug" {
@@ -46,4 +46,10 @@ variable "private_subnets" {
     "10.40.11.0/24",
     "10.40.12.0/24"
   ]
+}
+
+variable "node_instance_type" {
+  type        = string
+  description = "EKS node group instance type"
+  default     = "t3.medium"
 }

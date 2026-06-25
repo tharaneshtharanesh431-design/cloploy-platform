@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloploy-mongodb
+  namespace: cloploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloploy-mongodb
+  template:
+    metadata:
+      labels:
+        app: cloploy-mongodb
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:7
+          ports:
+            - containerPort: 27017
+          resources:
+            limits:
+              cpu: 300m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloploy-mongodb
+  namespace: cloploy
+spec:
+  selector:
+    app: cloploy-mongodb
+  ports:
+    - name: mongodb
+      port: 27017
+      targetPort: 27017
+  type: ClusterIP

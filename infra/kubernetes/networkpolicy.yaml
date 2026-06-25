@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cloploy-allow-internal
+  namespace: cloploy
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow all traffic from within the same namespace
+    - from:
+        - podSelector: {}
+  egress:
+    # Allow all outbound traffic (to reach external DB, Redis, APIs)
+    - {}

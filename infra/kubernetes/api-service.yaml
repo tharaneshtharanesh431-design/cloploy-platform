@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloploy-api
+  namespace: cloploy
+spec:
+  selector:
+    app: cloploy-api
+  ports:
+    - name: http
+      port: 3121
+      targetPort: 3121
+  type: ClusterIP

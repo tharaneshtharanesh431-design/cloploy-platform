@@ -1,0 +1,21 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloploy-web-pdb
+  namespace: cloploy
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloploy-web
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cloploy-api-pdb
+  namespace: cloploy
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cloploy-api

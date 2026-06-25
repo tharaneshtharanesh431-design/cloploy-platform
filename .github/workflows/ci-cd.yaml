@@ -1,0 +1,161 @@
+name: Cloploy CI/CD Pipeline
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+env:
+  AWS_REGION: ap-southeast-2
+  ECR_REGISTRY: 344626518012.dkr.ecr.ap-southeast-2.amazonaws.com
+  CLUSTER_NAME: cloploy-eks
+  SONAR_HOST_URL: http://localhost:9000
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: |
+          npm test --if-present
+
+  sonarqube:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  docker-build-push:
+    needs: sonarqube
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push API image to Amazon ECR
+        run: |
+          docker build -t $ECR_REGISTRY/cloploy-api:${{ github.sha }} -t $ECR_REGISTRY/cloploy-api:latest ./apps/api
+          docker push $ECR_REGISTRY/cloploy-api:${{ github.sha }}
+          docker push $ECR_REGISTRY/cloploy-api:latest
+
+      - name: Build, tag, and push Web image to Amazon ECR
+        run: |
+          docker build -t $ECR_REGISTRY/cloploy-web:${{ github.sha }} -t $ECR_REGISTRY/cloploy-web:latest ./apps/web
+          docker push $ECR_REGISTRY/cloploy-web:${{ github.sha }}
+          docker push $ECR_REGISTRY/cloploy-web:latest
+
+  terraform-infra:
+    needs: docker-build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init
+        run: |
+          cd infra/terraform
+          terraform init
+
+      - name: Terraform Format & Validate
+        run: |
+          cd infra/terraform
+          terraform fmt -check
+          terraform validate
+
+      - name: Terraform Plan
+        run: |
+          cd infra/terraform
+          terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        run: |
+          cd infra/terraform
+          terraform apply -auto-approve tfplan
+
+  kubernetes-deploy:
+    needs: terraform-infra
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update Kubeconfig
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.CLUSTER_NAME }}
+
+      - name: Deploy Kubernetes Manifests (RBAC, Secrets, ConfigMap)
+        run: |
+          kubectl apply -f infra/kubernetes/rbac.yaml
+          kubectl apply -f infra/kubernetes/secret.yaml
+          kubectl apply -f infra/kubernetes/configmap.yaml
+          kubectl apply -f infra/kubernetes/networkpolicy.yaml
+          kubectl apply -f infra/kubernetes/pdb.yaml
+
+      - name: Helm Deploy Web
+        run: |
+          helm upgrade --install cloploy-web ./infra/helm \
+            -f ./infra/helm/values.yaml \
+            -f ./infra/helm/values-prod.yaml \
+            --set image.tag=${{ github.sha }} \
+            -n cloploy --create-namespace
+
+      - name: Deploy Kubernetes Deployments (API & Ingress)
+        run: |
+          kubectl apply -f infra/kubernetes/api-deployment.yaml
+          kubectl apply -f infra/kubernetes/api-service.yaml
+          kubectl apply -f infra/kubernetes/ingress.yaml
+          kubectl apply -f infra/kubernetes/hpa.yaml
+          kubectl rollout status deployment/cloploy-api -n cloploy
+          kubectl rollout status deployment/cloploy-web -n cloploy

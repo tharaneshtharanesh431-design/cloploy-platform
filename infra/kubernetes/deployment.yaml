@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: cloploy-web
-          image: 123456789012.dkr.ecr.us-east-1.amazonaws.com/cloploy:latest
+          image: 344626518012.dkr.ecr.ap-southeast-2.amazonaws.com/cloploy-web:latest
           ports:
             - containerPort: 80
           envFrom:

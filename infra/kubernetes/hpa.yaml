@@ -9,7 +9,7 @@ spec:
     kind: Deployment
     name: cloploy-web
   minReplicas: 2
-  maxReplicas: 6
+  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
@@ -17,3 +17,23 @@ spec:
         target:
           type: Utilization
           averageUtilization: 70
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cloploy-api
+  namespace: cloploy
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cloploy-api
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75

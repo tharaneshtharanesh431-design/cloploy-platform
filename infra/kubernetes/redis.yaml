@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloploy-redis
+  namespace: cloploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloploy-redis
+  template:
+    metadata:
+      labels:
+        app: cloploy-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7
+          ports:
+            - containerPort: 6379
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloploy-redis
+  namespace: cloploy
+spec:
+  selector:
+    app: cloploy-redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP

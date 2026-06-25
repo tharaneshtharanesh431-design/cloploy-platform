@@ -19,11 +19,12 @@ resource "aws_eks_node_group" "main" {
     max_size     = 5
   }
 
-  instance_types = ["t3.micro"]
+  instance_types = [var.node_instance_type]
 
   depends_on = [
     aws_iam_role_policy_attachment.worker_node_policy,
     aws_iam_role_policy_attachment.cni_policy,
-    aws_iam_role_policy_attachment.ecr_readonly
+    aws_iam_role_policy_attachment.ecr_readonly,
+    aws_route_table_association.private
   ]
 }

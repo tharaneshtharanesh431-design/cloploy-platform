@@ -18,7 +18,7 @@ spec:
         paths:
           {{- range .paths }}
           - path: {{ .path }}
-            pathType: {{ .pathType }}
+            pathType: {{ default "Prefix" .pathType }}
             backend:
               service:
                 name: {{ include "cloploy-app.fullname" $ }}
