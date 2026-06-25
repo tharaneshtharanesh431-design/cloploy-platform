@@ -8,7 +8,7 @@ import { env } from '../config/env.js';
 import { logger } from '../config/logger.js';
 
 async function seed() {
-  const dbUri = env.MONGODB_URI.includes(':3122') ? env.MONGODB_URI.replace(':3122', ':27017') : env.MONGODB_URI;
+  const dbUri = env.MONGODB_URI;
   logger.info(`SEED: Connecting to database at ${dbUri}...`);
   
   mongoose.set('strictQuery', true);
