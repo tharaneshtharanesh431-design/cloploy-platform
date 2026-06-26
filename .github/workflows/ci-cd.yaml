@@ -158,4 +158,4 @@ jobs:
           kubectl apply -f infra/kubernetes/ingress.yaml
           kubectl apply -f infra/kubernetes/hpa.yaml
           kubectl rollout status deployment/cloploy-api -n cloploy
-          kubectl rollout status deployment/cloploy-web -n cloploy
+          kubectl rollout status deployment/cloploy-web-cloploy-app -n cloploy

@@ -9,7 +9,7 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "cloploy-terraform-state-8124173993"
+    bucket         = "cloploy-terraform-state"
     key            = "platform/global.tfstate"
     region         = "ap-southeast-2"
     encrypt        = true

@@ -108,7 +108,7 @@ pipeline {
           
           // Verify rollout status
           sh 'kubectl rollout status deployment/cloploy-api -n cloploy'
-          sh 'kubectl rollout status deployment/cloploy-web -n cloploy'
+          sh 'kubectl rollout status deployment/cloploy-web-cloploy-app -n cloploy'
         }
       }
     }
