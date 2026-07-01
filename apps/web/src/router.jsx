@@ -15,6 +15,7 @@ import { SubscriptionPage } from './pages/SubscriptionPage';
 import { SecuritySettingsPage } from './pages/SecuritySettingsPage';
 import { ProjectDetailsPage } from './pages/ProjectDetailsPage';
 import { DomainsPage } from './pages/DomainsPage';
+import { GoogleLoginSimulationPage } from './pages/GoogleLoginSimulationPage';
 
 function ProtectedLayout() {
   const token = useSelector((state) => state.auth.token);
@@ -98,6 +99,10 @@ export const router = createBrowserRouter([
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> }
     ]
+  },
+  {
+    path: '/google-login-simulation',
+    element: <GoogleLoginSimulationPage />
   },
   {
     element: <ProtectedLayout />,

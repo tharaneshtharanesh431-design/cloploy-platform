@@ -11,9 +11,16 @@ const getSubdomain = () => {
   const hostname = window.location.hostname;
   if (hostname === 'localhost' || hostname === '127.0.0.1') return null;
   const parts = hostname.split('.');
+  if (hostname.endsWith('.amazonaws.com')) {
+    if (parts.length > 5) {
+      if (parts[0] === 'www' || parts[0] === 'app') return null;
+      return parts[0];
+    }
+    return null;
+  }
   if (parts.length === 2 && parts[1] === 'localhost') return parts[0];
   if (parts.length >= 3) {
-    if (parts[0] === 'www') {
+    if (parts[0] === 'www' || parts[0] === 'app') {
       if (parts.length > 3) return parts[1];
       return null;
     }
@@ -25,6 +32,7 @@ const getSubdomain = () => {
 const subdomain = getSubdomain();
 const isCustomDomain = !window.location.hostname.endsWith('localhost') && 
                        !window.location.hostname.endsWith('cloploy.app') &&
+                       !window.location.hostname.endsWith('.amazonaws.com') &&
                        window.location.hostname !== 'localhost' &&
                        window.location.hostname !== '127.0.0.1';
 

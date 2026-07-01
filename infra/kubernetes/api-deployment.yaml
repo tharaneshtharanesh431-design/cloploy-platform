@@ -24,17 +24,12 @@ spec:
             - name: PORT
               value: "3121"
             - name: MONGODB_URI
-              valueFrom:
-                secretKeyRef:
-                  name: cloploy-secrets
-                  key: MONGODB_URI
-            - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: cloploy-secrets
-                  key: JWT_SECRET
+              value: "mongodb://cloploy-mongodb:27017/cloploy"
             - name: REDIS_URL
               value: "redis://cloploy-redis:6379"
+          envFrom:
+            - secretRef:
+                name: cloploy-secrets
           resources:
             limits:
               cpu: 500m

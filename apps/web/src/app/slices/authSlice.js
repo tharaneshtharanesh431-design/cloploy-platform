@@ -108,7 +108,9 @@ const slice = createSlice({
     emailSent: true,
     requiresTwoFactor: false,
     tempToken: null,
-    resendStatus: 'idle'
+    resendStatus: 'idle',
+    devOtp: '',
+    emailWarning: ''
   },
   reducers: {
     logout(state) {
@@ -119,6 +121,8 @@ const slice = createSlice({
       state.emailSent = true;
       state.requiresTwoFactor = false;
       state.tempToken = null;
+      state.devOtp = '';
+      state.emailWarning = '';
       localStorage.removeItem('cloploy_token');
       localStorage.removeItem('cloploy_temp_token');
     },
@@ -130,9 +134,15 @@ const slice = createSlice({
       state.tempToken = null;
       state.error = null;
       state.resendStatus = 'idle';
+      state.devOtp = '';
+      state.emailWarning = '';
     },
     updateUser(state, action) {
       state.user = action.payload;
+    },
+    setToken(state, action) {
+      state.token = action.payload;
+      localStorage.setItem('cloploy_token', action.payload);
     }
   },
   extraReducers: (builder) => {
@@ -148,6 +158,8 @@ const slice = createSlice({
           state.requiresOtp = true;
           state.otpEmail = action.payload.email;
           state.emailSent = action.payload.emailSent !== false;
+          state.devOtp = action.payload.devOtp || '';
+          state.emailWarning = action.payload.emailSent ? '' : 'SMTP is unconfigured or failing. Using fallback code.';
         } else {
           state.user = action.payload.user;
           state.token = action.payload.accessToken;
@@ -168,6 +180,8 @@ const slice = createSlice({
           state.requiresOtp = true;
           state.otpEmail = action.payload.email;
           state.emailSent = action.payload.emailSent !== false;
+          state.devOtp = action.payload.devOtp || '';
+          state.emailWarning = action.payload.emailSent ? '' : 'SMTP is unconfigured or failing. Using fallback code.';
         } else {
           state.user = action.payload.user;
           state.token = action.payload.accessToken;
@@ -260,5 +274,5 @@ const slice = createSlice({
   }
 });
 
-export const { logout, resetOtpState, updateUser } = slice.actions;
+export const { logout, resetOtpState, updateUser, setToken } = slice.actions;
 export default slice.reducer;

@@ -129,7 +129,24 @@ export function ProjectDetailsPage() {
   }
 
   const deployUrl = project.deploymentUrl || `https://${project.slug}.cloploy.app`;
-  const liveUrl = project.customDomain ? `http://${project.customDomain}` : `http://${project.slug}.localhost:3120`;
+  const liveUrl = project.customDomain 
+    ? `http://${project.customDomain}` 
+    : (() => {
+        const { hostname, port, protocol } = window.location;
+        const portStr = port ? `:${port}` : '';
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          return `${protocol}//${project.slug}.localhost${portStr}`;
+        }
+        const parts = hostname.split('.');
+        if (hostname.endsWith('.amazonaws.com')) {
+          if (parts.length > 5) return `${protocol}//${project.slug}.${parts.slice(1).join('.')}${portStr}`;
+          return `${protocol}//${project.slug}.${hostname}${portStr}`;
+        }
+        if (parts.length >= 3 && (parts[0] === 'www' || parts[0] === 'app')) {
+          return `${protocol}//${project.slug}.${parts.slice(1).join('.')}${portStr}`;
+        }
+        return `${protocol}//${project.slug}.${hostname}${portStr}`;
+      })();
 
   return (
     <div className="space-y-7 pb-14 relative">

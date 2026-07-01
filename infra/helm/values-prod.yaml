@@ -2,6 +2,7 @@ replicaCount: 3
 
 image:
   repository: 344626518012.dkr.ecr.ap-southeast-2.amazonaws.com/cloploy-web
+  pullPolicy: Always
   tag: "latest"
 
 service:

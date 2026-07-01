@@ -8,34 +8,25 @@ let smtpVerified = false;
 /**
  * Initialize and verify the SMTP transporter on server startup.
  */
+const isRealKey = (key) => Boolean(key && !key.startsWith('YOUR_') && !key.includes('YOUR_REAL_') && key !== 'placeholder');
+
+/**
+ * Initialize and verify the SMTP transporter on server startup.
+ */
 export async function initEmailService() {
-  if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
-    logger.warn('EMAIL SERVICE: SMTP credentials missing in .env. Falling back to Ethereal Email for testing...');
-    try {
-      const testAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: { user: testAccount.user, pass: testAccount.pass }
-      });
-      smtpVerified = true;
-      logger.info('EMAIL SERVICE: Ethereal Sandbox created. Sent emails will log a preview URL.');
-      return true;
-    } catch (e) {
-      logger.error('EMAIL SERVICE: Failed to create Ethereal account: ' + e.message);
-      return false;
-    }
+  const hasCreds = isRealKey(env.SMTP_HOST) && isRealKey(env.SMTP_USER) && isRealKey(env.SMTP_PASS);
+
+  if (!hasCreds) {
+    logger.warn('EMAIL SERVICE: SMTP credentials missing or placeholder in .env. Falling back to Ethereal Email for testing...');
+    return await setupEtherealFallback();
   }
 
   try {
-    const config = env.SMTP_HOST.includes('gmail.com') ? {
-      service: 'gmail',
-      auth: { user: env.SMTP_USER, pass: env.SMTP_PASS }
-    } : {
-      host: env.SMTP_HOST,
-      port: env.SMTP_PORT,
-      secure: env.SMTP_PORT === 465,
+    // Explicit SMTP configuration is more reliable than Nodemailer's opaque service mappings
+    const config = {
+      host: env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(env.SMTP_PORT || 465),
+      secure: Number(env.SMTP_PORT) === 465,
       auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
       tls: { rejectUnauthorized: false },
       connectionTimeout: 10000,
@@ -50,12 +41,31 @@ export async function initEmailService() {
     logger.info(`EMAIL SERVICE: SMTP verified — ${env.SMTP_HOST}:${env.SMTP_PORT} as ${env.SMTP_USER}`);
     return true;
   } catch (err) {
-    smtpVerified = false;
-    transporter = null;
     logger.error(`EMAIL SERVICE: SMTP verification failed — ${err.message}`);
     if (err.message.includes('Invalid login') || err.message.includes('535')) {
       logger.error('HINT: Use a Google App Password, not your regular password.');
     }
+    logger.warn('EMAIL SERVICE: Falling back to Ethereal Email due to verification failure...');
+    return await setupEtherealFallback();
+  }
+}
+
+async function setupEtherealFallback() {
+  try {
+    const testAccount = await nodemailer.createTestAccount();
+    transporter = nodemailer.createTransport({
+      host: 'smtp.ethereal.email',
+      port: 587,
+      secure: false,
+      auth: { user: testAccount.user, pass: testAccount.pass }
+    });
+    smtpVerified = true;
+    logger.info('EMAIL SERVICE: Ethereal Sandbox created. Sent emails will log a preview URL.');
+    return true;
+  } catch (e) {
+    logger.error('EMAIL SERVICE: Failed to create Ethereal account: ' + e.message);
+    smtpVerified = false;
+    transporter = null;
     return false;
   }
 }

@@ -24,7 +24,7 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 export const app = express();
 
 app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
 app.use(cookieParser());
 app.use(express.json({ limit: '20mb' }));

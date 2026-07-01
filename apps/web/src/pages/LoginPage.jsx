@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { login, verifyLoginOtp, resetOtpState, googleLogin, resendOtp } from '../app/slices/authSlice';
+import { login, verifyLoginOtp, resetOtpState, googleLogin, resendOtp, setToken, fetchMe } from '../app/slices/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KeyRound, Mail, Lock, ShieldAlert, CheckCircle2, RefreshCw } from 'lucide-react';
 
 export function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { requiresOtp, otpEmail, error, token, emailSent, resendStatus } = useSelector((state) => state.auth);
+  const { requiresOtp, otpEmail, error, token, emailSent, resendStatus, devOtp, emailWarning } = useSelector((state) => state.auth);
 
   const [form, setForm] = useState({ email: '', password: '' });
   const [otp, setOtp] = useState('');
@@ -21,7 +21,18 @@ export function LoginPage() {
 
   useEffect(() => {
     dispatch(resetOtpState());
-  }, [dispatch]);
+    
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('token');
+    const urlError = params.get('error');
+    if (urlToken) {
+      dispatch(setToken(urlToken));
+      dispatch(fetchMe());
+      navigate('/dashboard');
+    } else if (urlError) {
+      setLocalError(urlError);
+    }
+  }, [dispatch, navigate]);
 
   useEffect(() => {
     if (token) navigate('/dashboard');
@@ -64,6 +75,13 @@ export function LoginPage() {
   const handleGoogleAccountSelect = (email, name) => {
     dispatch(googleLogin({ email, name }));
     setShowGooglePopup(false);
+  };
+
+  const handleGoogleLoginRedirect = () => {
+    const apiBase = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3121'
+      : '';
+    window.location.href = `${apiBase}/api/auth/google`;
   };
 
   const handleCustomGoogleSubmit = (e) => {
@@ -178,7 +196,7 @@ export function LoginPage() {
                   {/* Google Button */}
                   <motion.button
                     type="button"
-                    onClick={() => setShowGooglePopup(true)}
+                    onClick={handleGoogleLoginRedirect}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="flex w-full items-center justify-center gap-3 rounded-xl py-3.5 text-sm font-semibold text-white/80 transition-all duration-300 hover:border-white/10 hover:text-white"
@@ -220,10 +238,41 @@ export function LoginPage() {
                       Security Code
                     </h1>
                     <p className="mt-3 text-sm font-medium text-white/50 leading-relaxed">
-                      We sent a 2FA verification code to<br />
-                      <span className="font-bold text-purple-400">{otpEmail}</span>
+                      {emailSent ? (
+                        <>We sent a 2FA verification code to<br />
+                        <span className="font-bold text-purple-400">{otpEmail}</span></>
+                      ) : (
+                        <span className="font-semibold text-amber-400">⚠️ Email could not be sent. Check server logs.</span>
+                      )}
                     </p>
                   </div>
+
+                  {/* Dev mode OTP display */}
+                  {devOtp && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="mt-6 rounded-xl px-4 py-5 text-center"
+                      style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)' }}
+                    >
+                      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-amber-400">🔧 Dev Mode — Ethereal Email</p>
+                      <p className="text-3xl font-bold tracking-[0.3em] text-amber-400 font-space">{devOtp}</p>
+                      <p className="mt-3 text-[10px] font-medium text-white/30">Set SMTP_PASS in .env with a Google App Password to send real emails</p>
+                    </motion.div>
+                  )}
+
+                  {/* Email warning */}
+                  {emailWarning && !devOtp && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-5 flex items-center gap-3 rounded-xl px-4 py-3.5 text-xs font-semibold text-amber-400"
+                      style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)' }}
+                    >
+                      <ShieldAlert size={16} className="flex-shrink-0" />
+                      <span>{emailWarning}</span>
+                    </motion.div>
+                  )}
 
                   {/* Error Alert */}
                   {(error || localError) && (

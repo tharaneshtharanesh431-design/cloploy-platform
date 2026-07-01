@@ -132,7 +132,8 @@ router.post('/register',
       res.status(200).json({
         requiresOtp: true,
         email: user.email,
-        emailSent: emailResult.success
+        emailSent: emailResult.success,
+        devOtp: emailResult.success ? undefined : otp
       });
     } catch (error) {
       next(error);
@@ -194,7 +195,8 @@ router.post('/login',
         requiresOtp: true,
         email: user.email,
         requiresTwoFactor: user.twoFactorEnabled,
-        emailSent: emailResult.success
+        emailSent: emailResult.success,
+        devOtp: emailResult.success ? undefined : otp
       });
     } catch (error) {
       next(error);
@@ -279,6 +281,95 @@ router.post('/verify-totp', authenticate,
 // ─── GET CURRENT USER ────────────────────────────────────────────────────────
 router.get('/me', authenticate, async (req, res) => {
   res.json({ user: req.user });
+});
+
+// Helper to dynamically resolve client url origin
+const getClientUrl = (req) => {
+  const referer = req.get('Referer');
+  if (referer) {
+    try {
+      const url = new URL(referer);
+      return url.origin;
+    } catch (e) {
+      // ignore
+    }
+  }
+  return env.CLIENT_URL || `${req.protocol}://${req.get('host')}`;
+};
+
+// ─── GOOGLE OAUTH REDIRECT ──────────────────────────────────────────────────
+router.get('/google', (req, res) => {
+  const clientUrl = getClientUrl(req);
+  const googleClientId = env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+  
+  if (googleClientId && googleClientId !== 'placeholder' && !googleClientId.startsWith('YOUR_')) {
+    const callbackUrl = env.GOOGLE_CALLBACK_URL || process.env.GOOGLE_CALLBACK_URL || `${clientUrl}/api/auth/google/callback`;
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(callbackUrl)}&response_type=code&scope=openid%20email%20profile&prompt=select_account`;
+    return res.redirect(googleAuthUrl);
+  } else {
+    // Redirect to simulated Google Sign-in page
+    return res.redirect(`${clientUrl}/google-login-simulation`);
+  }
+});
+
+// ─── GOOGLE OAUTH CALLBACK ──────────────────────────────────────────────────
+router.get('/google/callback', async (req, res, next) => {
+  try {
+    const { code } = req.query;
+    const clientUrl = getClientUrl(req);
+    
+    if (!code) {
+      return res.redirect(`${clientUrl}/login?error=Google authentication failed`);
+    }
+    
+    const googleClientId = env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+    const googleClientSecret = env.GOOGLE_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
+    const callbackUrl = env.GOOGLE_CALLBACK_URL || process.env.GOOGLE_CALLBACK_URL || `${clientUrl}/api/auth/google/callback`;
+    
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: googleClientId,
+        client_secret: googleClientSecret,
+        redirect_uri: callbackUrl,
+        grant_type: 'authorization_code'
+      })
+    });
+    
+    if (!tokenResponse.ok) {
+      throw new Error('Failed to exchange Google authorization code');
+    }
+    
+    const tokenData = await tokenResponse.json();
+    
+    const userResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    
+    if (!userResponse.ok) {
+      throw new Error('Failed to fetch Google user info');
+    }
+    
+    const googleUser = await userResponse.json();
+    const { email, name } = googleUser;
+    
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({ name, email, isEmailVerified: true, onboarded: false });
+    }
+    
+    const accessToken = signAccessToken(user);
+    const refreshToken = signRefreshToken(user);
+    
+    // Redirect user to the frontend with token query parameter
+    res.redirect(`${clientUrl}/login?token=${accessToken}`);
+  } catch (error) {
+    logger.error(`Google callback error: ${error.message}`);
+    const clientUrl = getClientUrl(req);
+    res.redirect(`${clientUrl}/login?error=Google authentication failed`);
+  }
 });
 
 // ─── FORGOT PASSWORD ─────────────────────────────────────────────────────────

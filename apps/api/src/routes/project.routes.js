@@ -221,17 +221,23 @@ router.get('/by-domain/resolve', async (req, res, next) => {
   try {
     const { host, slug } = req.query;
     let project = null;
-    if (slug) {
-      project = await Project.findOne({ slug }).populate('latestDeploymentId');
-    } else if (host) {
-      const possibleSlug = host.split('.')[0];
-      project = await Project.findOne({
-        $or: [
-          { slug: possibleSlug },
-          { customDomain: host }
-        ]
-      }).populate('latestDeploymentId');
+
+    if (host) {
+      // 1. Try matching custom domain exactly first
+      project = await Project.findOne({ customDomain: host }).populate('latestDeploymentId');
     }
+
+    if (!project && slug) {
+      // 2. Try matching by slug
+      project = await Project.findOne({ slug }).populate('latestDeploymentId');
+    }
+
+    if (!project && host) {
+      // 3. Fallback: split host to find possible slug
+      const possibleSlug = host.split('.')[0];
+      project = await Project.findOne({ slug: possibleSlug }).populate('latestDeploymentId');
+    }
+
     if (!project) return res.status(404).json({ message: 'Project not found' });
     res.json({ project });
   } catch (error) {
